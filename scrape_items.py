@@ -6,12 +6,19 @@ from pymongo import MongoClient
 # MONGO_USERNAME = 'root'
 # MONGO_PASSWORD = ''
 
-connection = MongoClient('localhost', 27017)
-db = connection['gungeon']
-# db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
+MONGO_USERNAME = 'heroku_m8nk6xx5'
+MONGO_PASSWORD = 'fi03i0rubg1i7l94pk05iegn5b'
+connection = MongoClient('ds113358.mlab.com', 13358)
+db = connection['heroku_m8nk6xx5']
+
+# connection = MongoClient('localhost', 27017)
+# db = connection['gungeon']
+db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
 
 list_item = []
-page = requests.get("https://enterthegungeon.gamepedia.com/Items")
+url = "https://enterthegungeon.gamepedia.com/Items"
+print("Begin scraping " + url)
+page = requests.get(url)
 soup = BeautifulSoup(page.content, 'html.parser')
 trs = soup.find_all('tr')
 
@@ -20,6 +27,8 @@ for index, tr in enumerate(trs):
         continue
     tds = tr.find_all('td')
 
+    img = tds[0].find('img')
+    image = str(img.get('src'))
     name = str.strip(str(tds[1].text))
     type = str.strip(str(tds[2].text))
     quote = str.strip(str(tds[3].text))
@@ -42,6 +51,7 @@ for index, tr in enumerate(trs):
     effect = str.strip(str(tds[5].text))
 
     list_item.append({
+        'image': image,
         'name': name,
         'quote': quote,
         'quality': quality,
@@ -59,6 +69,7 @@ for item in list_item:
             if item != cursor:
                 db.item.update_one({"name": item.get('name')}, {
                     "$set": {
+                        'image': item.get('image'),
                         'quote': item.get('quote'),
                         'quality': item.get('quality'),
                         'type': item.get('type'),
@@ -66,5 +77,6 @@ for item in list_item:
                     }
                 })
 
+print("Scraped " + str(len(list_item)) + " item(s)")
 # for item in list_item:
 #     pprint(item)
