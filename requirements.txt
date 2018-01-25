@@ -12,3 +12,4 @@ gunicorn==19.6.0
 beautifulsoup4
 discord
 asyncio
+python>=3.5

@@ -1,18 +1,17 @@
 import discord
 import asyncio
+from discord.ext import commands
 
-client = discord.Client()
+bot = commands.Bot(command_prefix='botfix', description='description here')
 
-@client.event
+@bot.event
 async def on_ready():
     print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    print(bot.user.name)
 
-@client.event
-async def on_message(message):
-    if message.content.startswith('!ping'):
-       await client.send_message(message.channel, 'Pong!')
+@bot.command()
+"""Description of command goes here"""
+async def hello():
+    await bot.say('Hello
 
-client.run('MzE1NDM0MDA3MjcxNTcxNDU3.DUHUdQ.HgUB_BKvaNT790BcmIn0PYrRU5A')
+bot.run('MzE1NDM0MDA3MjcxNTcxNDU3.DUHUdQ.HgUB_BKvaNT790BcmIn0PYrRU5A')
