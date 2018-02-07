@@ -87,6 +87,7 @@ for index, tr in enumerate(trs):
     })
 
 print("Scraped " + str(len(list_gun)) + " item(s)...")
+print("Begin updating database...")
 
 # begin updating database
 count_ins = 0

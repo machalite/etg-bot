@@ -19,6 +19,7 @@ connection = MongoClient(MONGO_HOST, MONGO_PORT)
 db = connection[MONGO_DB_NAME]
 db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
 
+# begin scraping
 list_gundead = []
 url = config.get('URL', 'gundead')
 print("Begin scraping " + url)
@@ -47,10 +48,13 @@ for index, tr in enumerate(trs):
     })
 
 print("Scraped " + str(len(list_gundead)) + " item(s)...")
+print("Begin updating database...")
 
+# begin updating database
 count_ins = 0
 count_upd = 0
 for item in list_gundead:
+        # collection name: gundead
         cursor = db.gundead.find({'name': item.get('name')})
         if cursor.count() == 0:
             db.gundead.insert_one(item)
