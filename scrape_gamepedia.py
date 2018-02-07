@@ -1,6 +1,7 @@
 from pymongo import MongoClient
 import ConfigParser
-import functions
+import scrape_save
+import scrape
 
 config = ConfigParser.ConfigParser()
 config.read("scrape.conf")
@@ -21,10 +22,10 @@ url_gun = config.get('URL', 'gun')
 url_item = config.get('URL', 'item')
 url_gundead = config.get('URL', 'gundead')
 
-list_gun = functions.scrape_gun(url_gun)
-list_item = functions.scrape_item(url_item)
-list_gundead = functions.scrape_gundead(url_gundead)
+list_gun = scrape.scrape_gun(url_gun)
+list_item = scrape.scrape_item(url_item)
+list_gundead = scrape.scrape_gundead(url_gundead)
 
-functions.save_gun(db, list_gun)
-functions.save_item(db, list_item)
-functions.save_gundead(db, list_gundead)
+scrape_save.save_gun(db, list_gun)
+scrape_save.save_item(db, list_item)
+scrape_save.save_gundead(db, list_gundead)
