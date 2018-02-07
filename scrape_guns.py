@@ -2,24 +2,30 @@ import requests
 # from pprint import pprint
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+import ConfigParser
 
-MONGO_USERNAME = 'heroku_m8nk6xx5'
-MONGO_PASSWORD = 'fi03i0rubg1i7l94pk05iegn5b'
-connection = MongoClient('ds113358.mlab.com', 13358)
-db = connection['heroku_m8nk6xx5']
+config = ConfigParser.ConfigParser()
+config.read("scrape.conf")
+
+# get mongodb connection from scrape.conf
+MONGO_USERNAME = config.get('database', 'username')
+MONGO_PASSWORD = config.get('database', 'password')
+MONGO_HOST = config.get('database', 'host')
+MONGO_PORT = int(config.get('database', 'port'))
+MONGO_DB_NAME = config.get('database', 'db_name')
 
 # connection = MongoClient('localhost', 27017)
-# db = connection['gungeon']
-
+connection = MongoClient(MONGO_HOST, MONGO_PORT)
+db = connection[MONGO_DB_NAME]
 db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
 
+# begin scraping
 list_gun = []
-url = "https://enterthegungeon.gamepedia.com/Guns"
+url = config.get('URL', 'gun')
 print("Begin scraping " + url)
 page = requests.get(url)
 soup = BeautifulSoup(page.content, 'html.parser')
 trs = soup.find_all('tr')
-
 
 for index, tr in enumerate(trs):
     if index == 0:
@@ -80,10 +86,17 @@ for index, tr in enumerate(trs):
         'notes': notes,
     })
 
+print("Scraped " + str(len(list_gun)) + " item(s)...")
+
+# begin updating database
+count_ins = 0
+count_upd = 0
 for item in list_gun:
+        # collection name: gun
         cursor = db.gun.find({'name': item.get('name')})
         if cursor.count() == 0:
             db.gun.insert_one(item)
+            count_ins += 1
         else:
             cursor = list(cursor)[0]
             cursor.pop('_id')
@@ -106,7 +119,9 @@ for item in list_gun:
                         'notes': item.get('notes')
                     }
                 })
+            count_upd += 1
 
-print("Scraped " + str(len(list_gun)) + " item(s)")
+print("Inserted " + str(count_ins) + " item(s)")
+print("Updated " + str(count_upd) + " item(s)")
 # for gun in list_gun:
 #     pprint(gun)
