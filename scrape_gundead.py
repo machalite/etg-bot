@@ -2,21 +2,25 @@ import requests
 # from pprint import pprint
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
+import ConfigParser
 
-# MONGO_USERNAME = 'root'
-# MONGO_PASSWORD = ''
+config = ConfigParser.ConfigParser()
+config.read("scrape.conf")
 
-MONGO_USERNAME = 'heroku_m8nk6xx5'
-MONGO_PASSWORD = 'fi03i0rubg1i7l94pk05iegn5b'
-connection = MongoClient('ds113358.mlab.com', 13358)
-db = connection['heroku_m8nk6xx5']
+# get mongodb connection from scrape.conf
+MONGO_USERNAME = config.get('database', 'username')
+MONGO_PASSWORD = config.get('database', 'password')
+MONGO_HOST = config.get('database', 'host')
+MONGO_PORT = int(config.get('database', 'port'))
+MONGO_DB_NAME = config.get('database', 'db_name')
 
 # connection = MongoClient('localhost', 27017)
-# db = connection['gungeon']
+connection = MongoClient(MONGO_HOST, MONGO_PORT)
+db = connection[MONGO_DB_NAME]
 db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
 
 list_gundead = []
-url = "https://enterthegungeon.gamepedia.com/Cult_of_the_Gundead"
+url = config.get('URL', 'gundead')
 print("Begin scraping " + url)
 page = requests.get(url)
 soup = BeautifulSoup(page.content, 'html.parser')
@@ -32,7 +36,8 @@ for index, tr in enumerate(trs):
     image = str(img.get('src'))
     name = str.strip(str(tds[1].text))
     base_health = str.strip(str(tds[2].text))
-    description = str.strip(str(tds[3].text.replace(u'\u03a6', '').replace(u'\xd7', '')))
+    description = str.strip(
+        str(tds[3].text.replace(u'\u03a6', '').replace(u'\xd7', '')))
 
     list_gundead.append({
         'image': image,
@@ -41,12 +46,16 @@ for index, tr in enumerate(trs):
         'description': description
     })
 
+print("Scraped " + str(len(list_gundead)) + " item(s)...")
+
+count_ins = 0
+count_upd = 0
 for item in list_gundead:
         cursor = db.gundead.find({'name': item.get('name')})
         if cursor.count() == 0:
             db.gundead.insert_one(item)
+            count_ins += 1
         else:
-            # print "berhasil"
             cursor = list(cursor)[0]
             cursor.pop('_id')
             if item != cursor:
@@ -57,7 +66,9 @@ for item in list_gundead:
                         'description': item.get('description')
                     }
                 })
+            count_upd += 1
 
-print("Scraped " + str(len(list_gundead)) + " item(s)")
+print("Inserted " + str(count_ins) + " item(s)")
+print("Updated " + str(count_upd) + " item(s)")
 # for gundead in list_gundead:
 #     pprint(gundead)
