@@ -66,6 +66,7 @@ def scrape_gun(url):
             'force': force,
             'spread': spread,
             'notes': notes,
+            'class': "Gun"
         })
 
     print("Scraped " + str(len(list_gun)) + " gun(s)\n")
@@ -113,7 +114,8 @@ def scrape_item(url):
             'quote': quote,
             'quality': quality,
             'type': type,
-            'effect': effect
+            'effect': effect,
+            'class': "Item"
         })
 
     print("Scraped " + str(len(list_item)) + " item(s)\n")
@@ -144,7 +146,8 @@ def scrape_gundead(url):
             'image': image,
             'name': name,
             'base_health': base_health,
-            'description': description
+            'description': description,
+            "class": "Gundead"
         })
 
     print("Scraped " + str(len(list_gundead)) + " gundead(s)\n")
