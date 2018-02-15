@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 import ConfigParser
+import pprint
 
 config = ConfigParser.ConfigParser()
 config.read("scrape.conf")
@@ -18,25 +19,57 @@ db.authenticate(MONGO_USERNAME, MONGO_PASSWORD)
 
 def search_name(db, name):
     list_name = []
-    result = db['gun'].find({"name": {'$regex': name, '$options': 'i'}}, {"name": 1})
-    for gun in result:
-        list_name.append(str(gun['name']))
+    result = db[MONGO_COLLECTION].find(
+        {"name": {'$regex': name, '$options': 'i'}}, {"name": 1})
+    for res in result:
+        list_name.append(str(res['name']))
     return list_name
 
 
-def get_details(db, list_name):
-    if(len(list_name) == 1):
-        result = db['gun'].find({"_id": id})
-    print result
+def search_gun(db, name):
+    list_name = []
+    result = db[MONGO_COLLECTION].find(
+        {"name": {'$regex': name, '$options': 'i'}, "class": "Gun"},
+        {"name": 1})
+    for res in result:
+        list_name.append(str(res['name']))
+    return list_name
+
 
 def search_item(db, name):
     list_name = []
-    result = db['item'].find({"name": {'$regex': name, '$options': 'i'}}, {"name": 1})
-    for gun in result:
-        list_name.append(str(gun['name']))
+    result = db[MONGO_COLLECTION].find(
+        {"name": {'$regex': name, '$options': 'i'}, "class": "Item"},
+        {"name": 1})
+    for res in result:
+        list_name.append(str(res['name']))
     return list_name
 
 
-name = raw_input("Search :")
-list_name = search_name(db, name)
-print list_name
+def search_gundead(db, name):
+    list_name = []
+    result = db[MONGO_COLLECTION].find(
+        {"name": {'$regex': name, '$options': 'i'}, "class": "Gundead"},
+        {"name": 1})
+    for res in result:
+        list_name.append(str(res['name']))
+    return list_name
+
+
+def get_details(db):
+    name = raw_input("Search :")
+    list_name = search_name(db, name)
+
+    if(len(list_name) == 1):
+        result = db[MONGO_COLLECTION].find({"name": list_name[0]})
+        pprint.pprint(result)
+    elif(len(list_name) <= 15):
+        print "Found " + str(len(list_name)) + " item(s) that contains '" + name +"'"
+        for name in list_name:
+            print name
+    else:
+        print "Found " + str(len(list_name)) + " item(s)"
+        print "Too many result. Please narrow down your search..."
+#     print result
+get_details(db)
+# print list_name
