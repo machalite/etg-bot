@@ -1,6 +1,14 @@
 import discord
+import configparser
 import asyncio
+from query import search_gun, search_item, search_gundead, search_name
+#
+config = configparser.ConfigParser()
+config.read("strings.conf")
 
+TOKEN = config.get('settings', 'token')
+GREETINGS = config.get('log', 'greetings')
+PREFIX = config.get('settings', 'prefix')
 client = discord.Client()
 
 @client.event
@@ -12,9 +20,27 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
-    if message.content.startswith('$greet'):
+    input_msg = message.content
+    if input_msg.startswith(PREFIX + config.get('keywords', 'greet')):
         await client.send_message(message.channel, 'Say hello')
         msg = await client.wait_for_message(author=message.author, content='hello')
         await client.send_message(message.channel, 'Hello.')
+    if message.content.startswith(PREFIX + config.get('keywords', 'search_name')):
+        index = len(PREFIX + config.get('keywords', 'search_name')) + 1
+        input_name = input_msg[index:]
+        # await client.send_message(message.channel, input_name)
+        names = search_name(input_name)
+        if len(names)>0:
+            str_result = "```Search results for '" + input_name + "' :\n"
+            str_result = str_result + "-----------------------------------------\n"
+            for name in names:
+                str_result = str_result + name + "\n"
+            str_result = str_result + "```"
+        elif len(names) == 1:
+            str_result = "Result for '" + input_name + "' :\n"
+            str_result = str_result + "-----------------------------------------\n"
+        else:
+            str_result = "No result for '" + input_name + "'"
+        await client.send_message(message.channel, str_result)
 
-client.run('MzE1NDM0MDA3MjcxNTcxNDU3.DWayYg.FxiOaWP43azdiyT4fgYwLljjZYo')
+client.run(TOKEN)
